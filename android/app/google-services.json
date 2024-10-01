@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "717012696191",
+    "project_id": "dormsityapp",
+    "storage_bucket": "dormsityapp.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717012696191:android:0869bbbd9f4527543e534a",
+        "android_client_info": {
+          "package_name": "com.example.dormsity"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBoLj-IZbXsVQ3Q3Azzg6XLtzZuUM_uSsU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
