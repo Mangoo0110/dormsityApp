@@ -1,26 +1,27 @@
-import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/utils/constants/app_colors.dart';
 
-import '../../domain/entities/image.dart';
-import '../providers/app_image_provider.dart';
+import '../../data/datasources/firebase/image_firebase_datasource.dart';
+import '../providers/image_read_provider.dart';
 
 class ShowRectImage extends StatefulWidget {
-  final String imageId;
+  final String imageUrl;
   final double? height;
   final double? width;
-  final double borderRadius;
-  const ShowRectImage({super.key, required this.imageId, this.height, this.width, required this.borderRadius});
+  final double borderRadiusVal;
+  const ShowRectImage({super.key, required this.imageUrl, this.height, this.width, required this.borderRadiusVal});
 
   @override
   State<ShowRectImage> createState() => _ShowRectImageState();
 }
 
 class _ShowRectImageState extends State<ShowRectImage> {
+
   @override
   Widget build(BuildContext context) {
     return LayoutBuilder(
@@ -31,32 +32,23 @@ class _ShowRectImageState extends State<ShowRectImage> {
           
           decoration: BoxDecoration(
             color: AppColors.context(context).textColor.withOpacity(.5),
-            borderRadius: BorderRadius.circular(800000),
+            borderRadius: BorderRadius.circular(widget.borderRadiusVal),
           ),
           child: FutureBuilder(
-            future: context.read<AppImageProvider>().fetchImage(imageId: widget.imageId), 
-            builder: (context, snapshot) {
-              switch (snapshot.connectionState) {
-                case ConnectionState.waiting:
-                  return const Center(child: CircularProgressIndicator());
-                case ConnectionState.done || ConnectionState.active:
-                  if(snapshot.hasData){
-                    ImageX? imageX = snapshot.data;
-                    if(imageX != null) {
-                      return _image(imageX.image);
-                    } else {
-                      return _icon();
-                    }
-                  } else {
-                    return _icon();
-                  }
-                default: 
-                  return const Center(child: CircularProgressIndicator());
+            future: context.read<ImageReadProvider>().fetchImage(imageUrl: widget.imageUrl), 
+            builder:(context, snapshot) {
+              switch (snapshot.hasData && snapshot.data != null) {
+                case true:
+                  ImageX? imageX = snapshot.data;
+                  return _image(imageX!.image);
+                case false:
+                  return Container();
+                  
+                default:
+                  return Container();
               }
             },
-              
-          )
-          
+          ),
         );
       },
     );
@@ -68,23 +60,9 @@ class _ShowRectImageState extends State<ShowRectImage> {
         return Image.memory(
           image,
           fit: BoxFit.cover,
-          height: widget.height ?? constraints.maxHeight - 2,
-          width:  widget.width ?? constraints.maxWidth - 2,
-        );
-      },
-    );
-  }
-
-  Widget _icon(){
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return Padding(
-          padding: const EdgeInsets.all(4.0),
-          child: Icon(
-            Icons.image, 
-            color: AppColors.context(context).backgroundColor.withOpacity(.8), 
-            size: min(widget.height ?? constraints.maxHeight, widget.width ?? constraints.maxWidth) - 8,),
-        );
+          height: constraints.maxHeight,
+          width:  constraints.maxWidth,
+        ).animate().fadeIn(duration: const Duration(milliseconds: 300));
       },
     );
   }

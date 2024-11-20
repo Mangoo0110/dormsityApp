@@ -1,4 +1,9 @@
 
+import 'features/education/ui/providers/education_inquiry_provider.dart';
+import 'features/image/ui/providers/image_write_provider.dart';
+
+import 'features/education/ui/providers/education_read_provider.dart';
+import 'features/education/ui/providers/education_write_provider.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -10,11 +15,15 @@ import 'core/utils/constants/app_names.dart';
 import 'core/utils/themes/theme.dart';
 import 'features/auth/ui/pages/signin.dart';
 import 'features/auth/ui/providers/auth_provider.dart';
-import 'features/dashboard/ui/pages/dashboard.dart';
-import 'features/dashboard/ui/providers/dashboard_controller_provider.dart';
-import 'features/image/ui/providers/app_image_provider.dart';
-import 'features/user_profile/ui/providers/user_provider.dart';
+import 'dashboard.dart';
+import 'features/image/ui/providers/image_read_provider.dart';
+import 'features/page_entity/ui/providers/institute_page_read_provider.dart';
+import 'features/page_entity/ui/providers/institute_page_create_provider.dart';
+import 'features/user_profile/ui/providers/user_profile_read_provider.dart';
+import 'home_page_provider.dart';
 import 'init_dependency.dart';
+import 'user_app_data_provider.dart';
+import 'voting_provider.dart';
 
 
 void main() async{
@@ -22,9 +31,17 @@ void main() async{
 
   List<ChangeNotifierProvider> providers = [
             ChangeNotifierProvider<UserAuthProvider>(create: (context)=> UserAuthProvider()),
-            ChangeNotifierProvider<AppImageProvider>(create: (context)=> AppImageProvider()),
-            ChangeNotifierProvider<UserProvider>(create: (context)=> UserProvider()),
-            ChangeNotifierProvider<DashboardControllerProvider>(create: (context) => DashboardControllerProvider()),
+            ChangeNotifierProvider<ImageReadProvider>(create: (context)=> ImageReadProvider()),
+            ChangeNotifierProvider<ImageWriteProvider>(create: (context)=> ImageWriteProvider()),
+            ChangeNotifierProvider<UserProfileReadProvider>(create: (context)=> UserProfileReadProvider()),
+            ChangeNotifierProvider<EducationReadProvider>(create: (context) => EducationReadProvider()),
+            ChangeNotifierProvider<EducationWriteProvider>(create: (context) => EducationWriteProvider()),
+            ChangeNotifierProvider<EducationInquiryProvider>(create: (context) => EducationInquiryProvider()),
+            ChangeNotifierProvider<InstitutePageWriteProvider>(create: (context) => InstitutePageWriteProvider()),
+            ChangeNotifierProvider<InstitutePageReadProvider>(create: (context) => InstitutePageReadProvider()),
+            ChangeNotifierProvider<UserAppDataProvider>(create: (context) => UserAppDataProvider()),
+            ChangeNotifierProvider<HomePageProvider>(create: (context) => HomePageProvider()),
+            ChangeNotifierProvider<VotingProvider>(create: (context) => VotingProvider()),
           ];
   if (!kIsWeb) {
     await getApplicationDocumentsDirectory().then((docDir){
@@ -47,13 +64,7 @@ void main() async{
       Animate.restartOnHotReload = true;
       runApp(
         MultiProvider(
-          providers: [
-            ChangeNotifierProvider<UserAuthProvider>(create: (context)=> UserAuthProvider()),
-            ChangeNotifierProvider<AppImageProvider>(create: (context)=> AppImageProvider()),
-            ChangeNotifierProvider<UserProvider>(create: (context)=> UserProvider()),
-            ChangeNotifierProvider<DashboardControllerProvider>(create: (context) => DashboardControllerProvider()),
-            
-          ],
+          providers: providers,
           child: (const MyApp()),
         ));
     });
@@ -82,21 +93,22 @@ class MyApp extends StatelessWidget {
               child: CircularProgressIndicator());
           }
           if(snapshot.connectionState == ConnectionState.active || snapshot.connectionState == ConnectionState.done) {
-            var user = snapshot.data ;
+            var userAuth = snapshot.data ;
             
-            if(user == null) {
+            if(userAuth == null) {
               return const SignInView();
             } else {
               return FutureBuilder(
-                future: context.read<UserProvider>().fetchCurrentUser(),
+                future: context.read<UserProfileReadProvider>().fetchCurrentUser(),
                 builder: (context, snapshot) {
                   if(snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
                       child: CircularProgressIndicator());
                   }
                   if(snapshot.connectionState == ConnectionState.active || snapshot.connectionState == ConnectionState.done) {
-                    var store = snapshot.data ;
-                    if(store != null) {
+                    var currentUser = snapshot.data ;
+                    context.read<UserAppDataProvider>().init(userAuth: userAuth);
+                    if(currentUser != null) {
                       return const Dashboard();
                     }
                   }

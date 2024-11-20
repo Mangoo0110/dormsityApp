@@ -7,6 +7,9 @@ void failureToast(DataCRUDFailure dataFailure){
   if(dataFailure.failure == Failure.socketFailure) {
     Fluttertoast.showToast(msg: "You are offline. Check your internet connection");
   }
+  if(dataFailure.failure == Failure.noData) {
+    Fluttertoast.showToast(msg: "Doesn't exist!");
+  }
   if(dataFailure.failure == Failure.severFailure) {
     Fluttertoast.showToast(msg: "Failure: Server failed.");
   } else {

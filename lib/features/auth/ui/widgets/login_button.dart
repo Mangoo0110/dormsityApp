@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/common/widgets/text_widgets.dart';
 import '../../../../core/utils/constants/app_colors.dart';
 
-import '../../../dashboard/ui/pages/dashboard.dart';
+import '../../../../dashboard.dart';
 import '../providers/login_provider.dart';
 
 class LoginButtonWidget extends StatefulWidget {

@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:image_picker/image_picker.dart';
@@ -29,19 +29,17 @@ class _UploadImageState extends State<UploadImage> {
     return file;
   }
 
-  Future pickImage() async {
+  Future<Uint8List?> pickImage(Uint8List? image) async{
     try {
+
       final returnedImage = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 13);
-      if(returnedImage == null) return;
-      setState(() {
-        image = File(returnedImage.path).readAsBytesSync();
-        if(image == null){
-          return;
-        }
-          widget.onPick(image!);
-      });
+      if(returnedImage == null) return null;
+
+      return File(returnedImage.path).readAsBytesSync();
+       
     } catch (error) {
       Fluttertoast.showToast(msg: "Failed to pick image. Internal error!");
+      return null;
     }
   }
 
@@ -56,7 +54,10 @@ class _UploadImageState extends State<UploadImage> {
             padding: const EdgeInsets.all(2.0),
             child: InkWell(
               onTap: () async{
-                await pickImage();
+
+                image = await compute(pickImage, image);
+                if(image != null) widget.onPick(image!);
+                
               },
               child: Row(
                 mainAxisSize: MainAxisSize.min,

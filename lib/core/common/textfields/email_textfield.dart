@@ -49,7 +49,7 @@ class _EmailTextfieldState extends State<EmailTextfield> {
             constraints: BoxConstraints(minHeight: constraints.maxHeight),
             hintText: widget.hintText,
             labelText: widget.labelText,
-            labelStyle: Theme.of(context).textTheme.labelMedium,
+            //labelStyle: Theme.of(context).textTheme.labelMedium,
             hintStyle: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w600),
             border:  OutlineInputBorder(
                 borderSide: const BorderSide(

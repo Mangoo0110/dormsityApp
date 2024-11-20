@@ -10,16 +10,16 @@ class DBottomAppBarTheme {
   static BottomAppBarTheme lightBottomAppBarTheme = BottomAppBarTheme(
     color: AppColors.light().backgroundColor,
     elevation: 8,
-    shadowColor: AppColors.light().textColor,
+    shadowColor: AppColors.light().backgroundColor,
     shape: const CircularNotchedRectangle(),
   );
 
   // Dark BottomAppBarThemeData
   static BottomAppBarTheme darkBottomAppBarTheme = BottomAppBarTheme(
-    color: AppColors.dark().backgroundColor,
+    color: AppColors.dark().dividerColor,
     elevation: 8,
-    shadowColor: AppColors.dark().textColor,
-    surfaceTintColor: AppColors.dark().textColor,
+    shadowColor: AppColors.dark().dividerColor,
+    surfaceTintColor: AppColors.dark().dividerColor,
     shape: const CircularNotchedRectangle(),
   );
 }

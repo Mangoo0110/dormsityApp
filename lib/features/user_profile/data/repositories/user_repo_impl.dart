@@ -1,75 +1,87 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dartz/dartz.dart';
+import 'package:dormsity/features/user_profile/domain/entities/user_pub.dart';
 
 import '../../../../core/api_handler/failure.dart';
 import '../../../../core/api_handler/success.dart';
 import '../../../../core/api_handler/trycatch.dart';
-import '../../domain/entities/app_user.dart';
+import '../../../../core/utils/func/dekhao.dart';
+import '../../domain/entities/user_prv.dart';
 import '../../domain/repositories/user_repo.dart';
 import '../datasources/local/user_local_datasource.dart';
 import '../datasources/remote/user_remote_datasource.dart';
-import '../models/user_model.dart';
-import '../models/admin_sync_model.dart';
+import '../models/user_prv_model.dart';
+import '../models/user_pub_model.dart';
+import '../models/user_sync_model.dart';
 
 class UserRepoImpl implements UserRepo{
 
-  final UserInfoRemoteDatasource _adminRemoteDatasource;
-  final UserInfoLocalDatasource _adminLocalDatasource;
+  final UserInfoRemoteDatasource _userRemoteDatasource;
+  final UserInfoLocalDatasource _userLocalDatasource;
 
-  UserRepoImpl(this._adminRemoteDatasource, this._adminLocalDatasource);
+  UserRepoImpl(this._userRemoteDatasource, this._userLocalDatasource);
   
   @override
-  Future<Either<DataCRUDFailure, AppUser?>> fetchUserInfo() async{
-    return await _remotefetchAdminInfo().then((value) async{
+  Future<Either<DataCRUDFailure, UserPrv?>> fetchCurrentUserInfo({bool? forceFetch}) async{
+    return await _remotefetchUserInfo(forceFetch: forceFetch).then((value) async{
       return await value.fold(
         (l) async{
-          return await _localfetchAdminInfo();
-        }, (admin) async{
-          if(admin != null) {
-            await _saveAdminInfoAtLocal(UserSync(type: DocumentChangeType.added, admin: UserModel.fromEntity(admin), isSynced: true));
+          dekhao('UserRepoImpl/fetchCurrentUserInfo user remote data is null');
+          return await _localfetchUserInfo();
+        }, (user) async{
+          if(user != null) {
+            dekhao('UserRepoImpl/fetchCurrentUserInfo user is fetched');
+            await _saveUserInfoAtLocal(UserSync(type: DocumentChangeType.added, userPrv: UserPrvModel.fromEntity(user), isSynced: true));
           }
-          return Right(admin);
+          return Right(user);
         });
     });
   }
 
-  Future<Either<DataCRUDFailure, AppUser?>> _remotefetchAdminInfo() async{
-    return await asyncTryCatch<AppUser?>(tryFunc: ()async{
-      return await _adminRemoteDatasource.fetchUserInfo();
+  Future<Either<DataCRUDFailure, UserPrv?>> _remotefetchUserInfo({bool? forceFetch}) async{
+    return await asyncTryCatch<UserPrv?>(tryFunc: ()async{
+      return await _userRemoteDatasource.fetchCurrentUserInfo(forceFetch: forceFetch);
     });
   }
 
-  Future<Either<DataCRUDFailure, AppUser?>> _localfetchAdminInfo() async{
-    return await asyncTryCatch<AppUser?>(tryFunc: ()async{
-      return await _adminLocalDatasource.fetchAdminInfo().then((value) {
+  Future<Either<DataCRUDFailure, UserPrv?>> _localfetchUserInfo() async{
+    return await asyncTryCatch<UserPrv?>(tryFunc: ()async{
+      return await _userLocalDatasource.fetchCurrentUserInfo().then((value) {
         if(value == null) return null;
-        return value.admin;
+        return value.userPrv;
       });
     });
   }
   
   @override
-  Future<Either<DataCRUDFailure, Success>> saveUserInfo(AppUser admin) async{
-    return _saveAdminInfoAtRemote(admin).then((value) {
+  Future<Either<DataCRUDFailure, Success>> saveUserInfo(UserPrv user) async{
+    return _saveUserInfoAtRemote(user).then((value) {
       return value.fold(
         (l) async{
-          return await _saveAdminInfoAtLocal(UserSync(type: DocumentChangeType.added, admin: UserModel.fromEntity(admin), isSynced: false));
+          return await _saveUserInfoAtLocal(UserSync(type: DocumentChangeType.added, userPrv: UserPrvModel.fromEntity(user), isSynced: false));
         }, (r)  async{
-          return await _saveAdminInfoAtLocal(UserSync(type: DocumentChangeType.added, admin: UserModel.fromEntity(admin), isSynced: true));
+          return await _saveUserInfoAtLocal(UserSync(type: DocumentChangeType.added, userPrv: UserPrvModel.fromEntity(user), isSynced: true));
         });
     });
   }
   
-  Future<Either<DataCRUDFailure, Success>> _saveAdminInfoAtLocal(UserSync adminSync) async{
+  Future<Either<DataCRUDFailure, Success>> _saveUserInfoAtLocal(UserSync userSync) async{
     return asyncTryCatch<Success>(tryFunc: () async{
-      return await _adminLocalDatasource.saveAdminInfo(adminSync).then((value) => Success());
+      return await _userLocalDatasource.saveUserInfo(userSync).then((value) => Success());
     });
   }
 
-  Future<Either<DataCRUDFailure, Success>> _saveAdminInfoAtRemote(AppUser admin) async{
+  Future<Either<DataCRUDFailure, Success>> _saveUserInfoAtRemote(UserPrv userPrv) async{
     return asyncTryCatch<Success>(tryFunc: () async{
-      return await _adminRemoteDatasource.saveUserInfo(UserModel.fromEntity(admin)).then((value) => Success());
+      return await _userRemoteDatasource.saveUserInfo(userPrv:  UserPrvModel.fromEntity(userPrv), userPub: UserPubModel.fromPrivateEntity(userPrv)).then((value) => Success());
+    });
+  }
+
+  @override
+  Future<Either<DataCRUDFailure, UserPub>> fetchUserInfo({required String userId}) async{
+    return asyncTryCatch<UserPub>(tryFunc: () async{
+      return await _userRemoteDatasource.fetchUserInfo(userId: userId);
     });
   }
 

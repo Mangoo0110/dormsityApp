@@ -6,8 +6,8 @@ class DCardTheme {
 
   // Light CardTheme
   static CardTheme lightCardTheme = CardTheme(
-    color: AppColors.light().contentBoxColor, // Background color of the card
-    shadowColor: Colors.black.withOpacity(0.2), // Color of the shadow
+    color: AppColors.light().backgroundColor, // Background color of the card
+    //shadowColor: Colors.black.withOpacity(0.2), // Color of the shadow
     elevation: 4, // Elevation of the card
     margin: const EdgeInsets.symmetric(horizontal: 4), // Margin around the card
     shape: RoundedRectangleBorder( // Shape of the card
@@ -19,8 +19,8 @@ class DCardTheme {
 
   // Dark CardTheme
   static CardTheme darkCardTheme = CardTheme(
-    color: AppColors.dark().contentBoxColor,
-    //shadowColor: Colors.black.withOpacity(0.4), // Color of the shadow
+    color: AppColors.dark().backgroundColor,
+    //shadowColor: Colors.white.withOpacity(0.4), // Color of the shadow
     elevation: 4, // Elevation of the card
     margin: const EdgeInsets.symmetric(horizontal: 0), // Margin around the card
     shape: RoundedRectangleBorder( // Shape of the card

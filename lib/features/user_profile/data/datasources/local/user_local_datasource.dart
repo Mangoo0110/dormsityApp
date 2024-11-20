@@ -4,12 +4,12 @@ import 'package:hive/hive.dart';
 import '../../../../../core/utils/func/dekhao.dart';
 
 import '../../../../auth/data/datasources/remote/auth_remote_datasource.dart';
-import '../../models/admin_sync_model.dart';
+import '../../models/user_sync_model.dart';
 
 abstract interface class UserInfoLocalDatasource{
-  Future<UserSync?> fetchAdminInfo();
+  Future<UserSync?> fetchCurrentUserInfo();
 
-  Future<void> saveAdminInfo(UserSync adminSync);
+  Future<void> saveUserInfo(UserSync adminSync);
 }
 
 class UserHiveImpl implements UserInfoLocalDatasource{
@@ -37,7 +37,7 @@ class UserHiveImpl implements UserInfoLocalDatasource{
   }
 
   @override
-  Future<UserSync?> fetchAdminInfo() async{
+  Future<UserSync?> fetchCurrentUserInfo() async{
     if(AuthFirebaseImpl.instance.currentUserAuth == null) return null;
     return await _openBox()
     .then((value) {
@@ -55,10 +55,10 @@ class UserHiveImpl implements UserInfoLocalDatasource{
   }
 
   @override
-  Future<void> saveAdminInfo(UserSync adminSync) async{
+  Future<void> saveUserInfo(UserSync adminSync) async{
     if(AuthFirebaseImpl.instance.currentUserAuth == null) return;
     return await _openBox().then((value) async{
-      return await _box!.put(adminSync.admin.id, adminSync.toMap());
+      return await _box!.put(adminSync.userPrv.docId, adminSync.toMap());
     });
   }
 

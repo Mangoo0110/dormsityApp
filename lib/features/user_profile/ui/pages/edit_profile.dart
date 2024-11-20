@@ -2,17 +2,23 @@
 import 'dart:math';
 
 
+import 'package:dormsity/core/utils/constants/data_field_key_names.dart';
+import 'package:dormsity/core/utils/func/dekhao.dart';
+import 'package:dormsity/features/auth/ui/pages/signin.dart';
+import 'package:dormsity/features/education/ui/widgets/user_education_edit_list.dart';
+import 'package:dormsity/features/user_profile/ui/widgets/input_birthdate.dart';
+import 'package:dormsity/features/user_profile/ui/widgets/input_gender.dart';
+
+import '../../../image/ui/widgets/image_show_upload.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/common/textfields/name_textfield.dart';
 import '../../../../core/utils/constants/app_colors.dart';
 import '../../../auth/ui/providers/auth_provider.dart';
-import '../../../image/ui/providers/app_image_provider.dart';
-import '../providers/user_provider.dart';
-import '../providers/edit_user_profile_provider.dart';
+import '../providers/user_profile_read_provider.dart';
+import '../providers/user_profile_write_provider.dart';
+import '../widgets/profile_text_input_widget.dart';
 import '../widgets/user_info_save_button.dart';
-import '../widgets/edit_profile_pic.dart';
 
 class EditProfilePage extends StatefulWidget {
   final VoidCallback onCancel;
@@ -30,23 +36,32 @@ class _EditProfilePageState extends State<EditProfilePage> {
   @override
   void initState() {
     // TODO: implement initState
-    _nameInptCntrl.text = context.read<UserProvider>().currentAdmin == null ? '' : context.read<UserProvider>().currentAdmin!.fullName;
-    _professionInptCntrl.text = context.read<UserProvider>().currentAdmin == null ? '' : context.read<UserProvider>().currentAdmin!.profession;
+    _nameInptCntrl.text = context.read<UserProfileReadProvider>().currentUser == null ? '' : context.read<UserProfileReadProvider>().currentUser!.fullName;
+    _professionInptCntrl.text = context.read<UserProfileReadProvider>().currentUser == null ? '' : context.read<UserProfileReadProvider>().currentUser!.about;
     super.initState();
   }
   
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<EditUserProfileProvider>(
-      create: (context)=> EditUserProfileProvider(
-        context.read<UserProvider>().currentAdmin, 
-        context.read<UserAuthProvider>().userAuth!, 
-        context.read<UserProvider>().currentAdmin == null ? null : context.read<AppImageProvider>().findImage(imageId: context.read<UserProvider>().currentAdmin!.imageId) ),
+
+    final currentUser = context.read<UserProfileReadProvider>().currentUser;
+
+    if(currentUser == null) {
+      return const SignInView();
+    }
+
+    dekhao("Edit profile of ${currentUser.toString()}");
+    return ChangeNotifierProvider<UserProfileWriteProvider>(
+      create: (context)=> UserProfileWriteProvider(
+        currentUser, 
+        context.read<UserAuthProvider>().userAuth!,),
+      
       child: LayoutBuilder(
         builder: (context, constraints) {
           return Scaffold(
+            backgroundColor: AppColors.context(context).contentBoxColor,
             appBar: AppBar(
-              title: Text('Edit Admin Info', style: Theme.of(context).textTheme.titleMedium,),
+              title: Text('Edit profile bio', style: Theme.of(context).textTheme.titleMedium,),
               actions: const [
                 Padding(
                   padding: EdgeInsets.only(right: 8.0),
@@ -67,28 +82,78 @@ class _EditProfilePageState extends State<EditProfilePage> {
                 child: SingleChildScrollView(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       // image section
                         
-                      const SizedBox(
+                      SizedBox(
                         height: 160,
                         width: double.infinity,
                         child: Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: EditProfilePic(),
+                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: ImageShowUpload(
+                            radius: 140,
+                            imageUrl: currentUser.imageUrl,
+                            collectionName: FirebaseStorageCollections.kUserProfile,
+                            docId: currentUser.docId,
+                          ),
                         ),
                       ),
                         
                       const SizedBox(height: 10,),
               
-                      _inputFullName(),
+                      SizedBox(
+                        height: 70,
+                        width: constraints.maxWidth,
+                        child: ProfileTextInputWidget(
+                          onChanged: (text){
+                            context.read<UserProfileWriteProvider>().setFullName(text.trim());
+                          },
+                          hintText: 'Type your full name', 
+                          labelText: 'Full Name', 
+                          suffixIcon: null, 
+                          initialTextData: currentUser.fullName, 
+                        ),
+                      ),
                         
-                      const SizedBox(height: 10,),
+                      const SizedBox(height: 25,),
                   
-                      _inputProfession(),
+                      SizedBox(
+                        height: 70,
+                        width: constraints.maxWidth,
+                        child: ProfileTextInputWidget(
+                          onChanged: (text){
+                            context.read<UserProfileWriteProvider>().setFullName(text.trim());
+                          },
+                          hintText: 'Type your interest, skill, or simply about you', 
+                          labelText: 'Description', 
+                          suffixIcon: null, 
+                          initialTextData: currentUser.about, 
+                        ),
+                      ),
+
+                      const SizedBox(height: 25,),
+                  
+                      InputGender(
+                        initialGender: currentUser.gender, 
+                        onSelect: (selectedGender){
+                          if(selectedGender != null) context.read<UserProfileWriteProvider>().setGender(selectedGender);
+                        }
+                      ),
                       
+                      const SizedBox(height: 25,),
+
+                      InputBirthdate(
+                        initialBirthdate: currentUser.birthdate, 
+                        onSelect: (selectedDate) {
+                          return context.read<UserProfileWriteProvider>().setBirthdate(selectedDate);
+                        },
+                      ),
+
+                      const SizedBox(height: 25,),
+
+                      //UserEducationEditList(userId: currentUser.docId)
                     ],
                   ),
                 ),
@@ -97,46 +162,6 @@ class _EditProfilePageState extends State<EditProfilePage> {
           );
         },
       ),
-    );
-  }
-
-  Widget _inputFullName() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SizedBox(
-          height: 80,
-          width: constraints.maxWidth,
-          child: NameTextfield(
-            maxLines: 1, 
-            onChanged: (text){
-              context.read<EditUserProfileProvider>().setFullName(text.trim());
-            },
-            controller: _nameInptCntrl, 
-            hintText: 'Type your full name', 
-            labelText: 'Full Name', validationCheck: (text){},
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _inputProfession() {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return SizedBox(
-          height: 80,
-          width: constraints.maxWidth,
-          child: NameTextfield(
-            maxLines: 1, 
-            onChanged: (text){
-              context.read<EditUserProfileProvider>().setProfession(text.trim());
-            },
-            controller: _professionInptCntrl, 
-            hintText: 'e.g Student, Teacher', 
-            labelText: 'Profession', validationCheck: (text){},
-          ),
-        );
-      },
     );
   }
 

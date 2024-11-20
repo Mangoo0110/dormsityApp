@@ -14,7 +14,7 @@ class DeleteImage implements AsyncEitherUsecase<Success, String>{
   DeleteImage(this._imageRepo);
   @override
   Future<Either<DataCRUDFailure, Success>> call(String params) async{
-    return await _imageRepo.deleteImage(path: params);
+    return await _imageRepo.deleteImage(imageUrl: params);
   }
 
 }

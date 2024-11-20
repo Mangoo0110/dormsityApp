@@ -9,8 +9,13 @@ class DAppBarTheme {
   static AppBarTheme lightAppBarTheme = AppBarTheme(
     backgroundColor: AppColors.light().backgroundColor,
     //foregroundColor: AppColors.light().contentBoxColor,
-    surfaceTintColor: AppColors.light().backgroundColor,
-    elevation: 4,
+    surfaceTintColor: AppColors.light().backgroundColor,//AppColors.light().backgroundColor,
+    systemOverlayStyle: SystemUiOverlayStyle(
+      statusBarBrightness: Brightness.light,
+      statusBarColor: AppColors.light().backgroundColor,
+      statusBarIconBrightness: Brightness.dark
+    ),
+    elevation: 0,
     iconTheme: IconThemeData(color: AppColors.light().iconColor),
     actionsIconTheme: IconThemeData(color: AppColors.light().iconColor),
     toolbarTextStyle: TextStyle(color: AppColors.light().textColor),
@@ -19,15 +24,18 @@ class DAppBarTheme {
       fontWeight: FontWeight.bold,
     ),
     centerTitle: false,
-    toolbarHeight: kToolbarHeight,
-    systemOverlayStyle: SystemUiOverlayStyle.dark,
   );
 
   // Dark AppBarTheme
   static AppBarTheme darkAppBarTheme = AppBarTheme(
-    backgroundColor: AppColors.dark().backgroundColor,
-    foregroundColor: AppColors.dark().textColor,
-    elevation: 4,
+    backgroundColor: AppColors.dark().dividerColor,
+    surfaceTintColor: AppColors.dark().dividerColor,
+    systemOverlayStyle: SystemUiOverlayStyle(
+      statusBarBrightness: Brightness.dark,
+      statusBarColor: AppColors.dark().dividerColor,
+      statusBarIconBrightness: Brightness.light
+    ),
+    elevation: 0,
     iconTheme: IconThemeData(color: AppColors.dark().iconColor),
     actionsIconTheme: IconThemeData(color: AppColors.dark().iconColor),
     toolbarTextStyle: TextStyle(color: AppColors.dark().textColor),
@@ -36,12 +44,10 @@ class DAppBarTheme {
       fontWeight: FontWeight.bold,
     ),
     centerTitle: false,
-    toolbarHeight: kToolbarHeight,
     // bottom: PreferredSize(
     //   preferredSize: Size.fromHeight(kToolbarHeight),
     //   child: Container(),
     // ),
-    systemOverlayStyle: SystemUiOverlayStyle.light,
   );
 
   static AppBarTheme getAppBarTheme(Brightness brightness) {

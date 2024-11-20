@@ -39,11 +39,10 @@ abstract interface class RemoteAuthDataSource {
 
 class AuthFirebaseImpl implements RemoteAuthDataSource {
 
+  static AuthFirebaseImpl? _instance; 
   late FirebaseAuth _authInstance;
 
   UserAuth? _currentUserAuth;
-
-  static AuthFirebaseImpl? _instance;
 
   AuthFirebaseImpl._(){
     _authInstance = FirebaseAuth.instance;

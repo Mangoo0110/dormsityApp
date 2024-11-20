@@ -35,7 +35,7 @@ class DBottomNavigationBarThemes {
 
   // Dark BottomNavigationBarTheme
   static BottomNavigationBarThemeData darkBottomNavTheme = BottomNavigationBarThemeData(
-    backgroundColor: AppColors.dark().backgroundColor, // Background color for the bottom navigation bar
+    backgroundColor: Colors.blue, // Background color for the bottom navigation bar
     selectedItemColor: AppColors.dark().textColor, // Color of the selected item
     unselectedItemColor: AppColors.dark().textColor.withOpacity(.5), // Color of unselected items
     selectedIconTheme: IconThemeData(

@@ -1,14 +1,14 @@
 import 'dart:math';
 
 
-import 'package:dormsity/features/auth/ui/pages/signup.dart';
+import 'signup.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/common/textfields/email_textfield.dart';
 import '../../../../core/common/textfields/password_textfield.dart';
 import '../../../../core/utils/constants/app_colors.dart';
-import '../../../dashboard/ui/pages/dashboard.dart';
+import '../../../../dashboard.dart';
 import '../providers/auth_provider.dart';
 import '../providers/login_provider.dart';
 import '../widgets/app_title_widget.dart';
