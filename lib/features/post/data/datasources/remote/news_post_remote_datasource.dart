@@ -174,13 +174,19 @@ class NewsFirebaseImpl implements NewsPostRemoteDatasource{
       return cancelUpVoteNewsPost(params: params);
     }
 
+    // 
+    dekhao("calling isThePostAlreadyUpVoted");
     return await isThePostAlreadyUpVoted(newsPostDocId: params.news.docId, userAuth: params.userAuth).then((value) async{
       if(value.yes) {
+        dekhao("isThePostAlreadyUpVoted true");
         return;
       } else {
 
+        dekhao("isThePostAlreadyUpVoted false");
+        dekhao("Now, calling isThePostAlreadyDownVoted");
         isThePostAlreadyDownVoted(newsPostDocId: params.news.docId, userAuth: params.userAuth).then((value2) async{
           if(value2.yes) {
+            dekhao("isThePostAlreadyDownVoted true");
             await cancelDownVoteNewsPost(params: DownVoteNewsPostParams(downVote: false, userAuth: params.userAuth, news: params.news));
           } 
 
@@ -188,7 +194,7 @@ class NewsFirebaseImpl implements NewsPostRemoteDatasource{
               try {
 
                 WriteBatch batch = FirebaseFirestore.instance.batch();
-                batch.update(_newsPostUpVotersCollection(params.news.docId).doc(cnt.toString()), {FirestoreUpVoters.idList: FieldValue.arrayUnion([params.userAuth.id])});
+                batch.set(_newsPostUpVotersCollection(params.news.docId).doc(cnt.toString()), {FirestoreUpVoters.idList: FieldValue.arrayUnion([params.userAuth.id])});
                 batch.update(_newsPostsCollection().doc(params.news.docId), {FirestoreNewsPosts.upVote: FieldValue.increment(1)});
                 batch.update(_newsPostsCollection().doc(params.news.docId), {FirestoreNewsPosts.impression: FieldValue.increment(10)});
                 await batch.commit();
@@ -214,7 +220,7 @@ class NewsFirebaseImpl implements NewsPostRemoteDatasource{
       if(value.yes) {
 
         WriteBatch batch = FirebaseFirestore.instance.batch();
-        batch.update(_newsPostUpVotersCollection(params.news.docId).doc(value.docId ?? ''), {FirestoreUpVoters.idList: FieldValue.arrayRemove([params.userAuth.id])});
+        batch.set(_newsPostUpVotersCollection(params.news.docId).doc(value.docId ?? ''), {FirestoreUpVoters.idList: FieldValue.arrayRemove([params.userAuth.id])});
         batch.update(_newsPostsCollection().doc(params.news.docId), {FirestoreNewsPosts.upVote: FieldValue.increment(-1)});
         batch.update(_newsPostsCollection().doc(params.news.docId), {FirestoreNewsPosts.impression: FieldValue.increment(-10)});
         await batch.commit();
@@ -255,7 +261,7 @@ class NewsFirebaseImpl implements NewsPostRemoteDatasource{
 
                 WriteBatch batch = FirebaseFirestore.instance.batch();
                 // Add user's uid in one of post's downVoters collection.
-                batch.update(_newsPostDownVotersCollection(params.news.docId).doc(cnt.toString()), {FirestoreUpVoters.idList: FieldValue.arrayUnion([params.userAuth.id])});
+                batch.set(_newsPostDownVotersCollection(params.news.docId).doc(cnt.toString()), {FirestoreUpVoters.idList: FieldValue.arrayUnion([params.userAuth.id])});
                 // Decrement the vote counting field('upVote') by one.
                 batch.update(_newsPostsCollection().doc(params.news.docId), {FirestoreNewsPosts.upVote: FieldValue.increment(-1)});
                 batch.update(_newsPostsCollection().doc(params.news.docId), {FirestoreNewsPosts.impression: FieldValue.increment(-10)});
@@ -277,7 +283,7 @@ class NewsFirebaseImpl implements NewsPostRemoteDatasource{
     return await isThePostAlreadyDownVoted(newsPostDocId: params.news.docId, userAuth: params.userAuth).then((value) async{
       if(value.yes) {
         WriteBatch batch = FirebaseFirestore.instance.batch();
-        batch.update(_newsPostDownVotersCollection(params.news.docId).doc(value.docId), {FirestoreDownVoters.idList: FieldValue.arrayRemove([params.userAuth.id])});
+        batch.set(_newsPostDownVotersCollection(params.news.docId).doc(value.docId), {FirestoreDownVoters.idList: FieldValue.arrayRemove([params.userAuth.id])});
         batch.update(_newsPostsCollection().doc(params.news.docId), {FirestoreNewsPosts.upVote: FieldValue.increment(1)});
         batch.update(_newsPostsCollection().doc(params.news.docId), {FirestoreNewsPosts.impression: FieldValue.increment(10)});
         await batch.commit();
@@ -286,21 +292,30 @@ class NewsFirebaseImpl implements NewsPostRemoteDatasource{
   }
 
   Future<DocIdAndBooleanVal> isThePostAlreadyUpVoted({required String newsPostDocId, required UserAuth userAuth}) async{
-    return _newsPostUpVotersCollection(newsPostDocId)
+    try {
+      return _newsPostUpVotersCollection(newsPostDocId)
       .where(FirestoreUpVoters.idList, arrayContains: userAuth.id)
       .limit(1).get().then((qSnap){
         if(qSnap.docs.isNotEmpty) return DocIdAndBooleanVal(docId: qSnap.docs.first.id, yes: true);
         return DocIdAndBooleanVal(yes: false);
       });
+    } catch (e) {
+      return DocIdAndBooleanVal(yes: false);
+    }
   }
 
   Future<DocIdAndBooleanVal> isThePostAlreadyDownVoted({required String newsPostDocId, required UserAuth userAuth}) async{
-    return _newsPostDownVotersCollection(newsPostDocId)
+    try {
+      return _newsPostDownVotersCollection(newsPostDocId)
       .where(FirestoreUpVoters.idList, arrayContains: userAuth.id)
       .limit(1).get().then((qSnap){
         if(qSnap.docs.isNotEmpty) return DocIdAndBooleanVal(docId: qSnap.docs.first.id, yes: true);
         return DocIdAndBooleanVal(yes: false);
       });
+    } catch (e) {
+      return DocIdAndBooleanVal(yes: false);
+    }
+    
   }
 }
 

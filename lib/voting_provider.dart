@@ -14,7 +14,6 @@ import 'features/post/domain/entities/news.dart';
 class VotingProvider extends ChangeNotifier{
 
   Future<void> tappedUpVote({required UserAuth userAuth, required News newsPost,}) async{
-    dekhao("before ${newsPost.toString()}");
     if(newsPost.upVoted) {
       final params = UpVoteNewsPostParams(userAuth: userAuth, upVote: false, news: NewsModel.fromEntity(newsPost));
       await _cancelUpVoteNewsPost(
@@ -32,7 +31,6 @@ class VotingProvider extends ChangeNotifier{
         },
       );
     }
-    dekhao("after ${newsPost.toString()}");
   }
 
   Future<void> tappedDownVote({required UserAuth userAuth, required News newsPost,}) async{
